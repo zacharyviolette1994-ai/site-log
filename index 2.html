@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Site Log — Maine Stone Construction</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#14120F">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Poppins:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --black:#14120F;
+    --panel:#1F1C17;
+    --panel-2:#2A251E;
+    --gold:#C9A15C;
+    --gold-deep:#9C7A3D;
+    --gold-soft: rgba(201,161,92,0.14);
+    --cream:#F4F0E6;
+    --warm-gray:#9C9484;
+    --sage:#7A9B7E;
+    --rust:#B06A4F;
+    --border: rgba(201,161,92,0.16);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+  html,body{margin:0;padding:0;background:var(--black);color:var(--cream);font-family:'Poppins',sans-serif;min-height:100vh;}
+  body{padding-bottom:40px;}
+  .serif{font-family:'Playfair Display',serif;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  header{
+    padding:30px 22px 22px;
+    position:sticky; top:0; background:var(--black); z-index:20;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand-row{ display:flex; align-items:center; gap:10px; margin-bottom:18px;}
+  .trowel-mark{
+    width:34px; height:34px; border-radius:50%; border:1.5px solid var(--gold);
+    display:flex; align-items:center; justify-content:center; flex:none;
+  }
+  .trowel-mark svg{ width:17px; height:17px; }
+  .brand-name{
+    font-family:'Poppins',sans-serif; font-weight:600; font-size:11px;
+    letter-spacing:0.16em; text-transform:uppercase; color:var(--gold);
+  }
+  .brand-sub{ font-size:9.5px; letter-spacing:0.12em; color:var(--warm-gray); text-transform:uppercase; margin-top:2px;}
+
+  h1{
+    font-family:'Playfair Display',serif; font-weight:700; font-size:32px;
+    line-height:1.12; margin:0; color:var(--cream);
+  }
+  h1 em{ font-style:normal; color:var(--gold); display:block; }
+  .gold-rule{ width:56px; height:2px; background:var(--gold); border:none; margin:14px 0 12px; }
+  .sub{color:var(--warm-gray); font-size:13.5px; line-height:1.5; max-width:320px;}
+
+  .drop-zone{
+    display:flex; flex-direction:column; align-items:center;
+    padding:36px 20px 30px;
+  }
+  .pin-btn{
+    width:150px; height:150px; border-radius:50%;
+    background: radial-gradient(circle at 50% 38%, #DCB876 0%, var(--gold-deep) 100%);
+    border: 1px solid rgba(201,161,92,0.5);
+    box-shadow: 0 0 0 9px var(--gold-soft), 0 10px 26px rgba(0,0,0,0.55);
+    color:#1C1710; font-family:'Playfair Display',serif; font-weight:700;
+    font-size:17px; letter-spacing:0.02em;
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    cursor:pointer; transition: transform .12s ease, box-shadow .12s ease;
+    -webkit-appearance:none; appearance:none; touch-action: manipulation;
+  }
+  .pin-btn:active{ transform:scale(0.95); box-shadow: 0 0 0 5px var(--gold-soft), 0 4px 12px rgba(0,0,0,0.5);}
+  .pin-btn small{
+    display:block; font-family:'Poppins',sans-serif; font-weight:500; font-size:9.5px;
+    margin-top:6px; letter-spacing:0.14em; text-transform:uppercase; opacity:0.8;
+  }
+  .pin-hint{color:var(--warm-gray); font-size:12.5px; margin-top:18px; text-align:center; max-width:260px; line-height:1.5;}
+  .status-line{
+    margin-top:14px; font-family:'IBM Plex Mono',monospace; font-size:12px;
+    color:var(--gold); min-height:16px; text-align:center;
+  }
+
+  .section-label{
+    display:flex; align-items:center; gap:10px;
+    padding:0 22px; margin:30px 0 12px;
+  }
+  .section-label .txt{
+    font-family:'Poppins',sans-serif; text-transform:uppercase; letter-spacing:0.14em;
+    font-size:11px; color:var(--gold); font-weight:600;
+  }
+  .section-label .line{flex:1; height:1px; background:var(--border);}
+
+  .filters{ display:flex; gap:8px; padding:0 22px; overflow-x:auto; -ms-overflow-style:none; scrollbar-width:none;}
+  .filters::-webkit-scrollbar{display:none;}
+  .chip{
+    flex:none; padding:7px 14px; border-radius:3px; border:1px solid var(--border);
+    background:var(--panel); color:var(--warm-gray); font-size:11.5px; font-family:'Poppins',sans-serif;
+    letter-spacing:0.02em; cursor:pointer; white-space:nowrap;
+  }
+  .chip.active{background:var(--gold); border-color:var(--gold); color:#1C1710; font-weight:600;}
+  .chip.stale{ border-color: var(--rust); color: var(--rust); }
+  .chip.stale.active{ background:var(--rust); border-color:var(--rust); color:var(--cream); }
+  .badge.stale-badge{ background:rgba(176,106,79,0.18); color:var(--rust); border:1px solid rgba(176,106,79,0.4); margin-top:6px; display:inline-block; }
+
+  #list{ padding:16px 22px 0; display:flex; flex-direction:column; gap:12px;}
+  .empty{
+    margin:30px 22px; padding:30px 18px; text-align:center; border:1px dashed var(--border);
+    border-radius:2px; color:var(--warm-gray); font-size:13.5px; line-height:1.6;
+    font-family:'Playfair Display',serif; font-style:italic;
+  }
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:4px;
+    padding:15px; display:flex; gap:13px; position:relative;
+  }
+  .card::before{
+    content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--gold-deep);
+    border-radius:4px 0 0 4px;
+  }
+  .thumb{
+    width:64px; height:64px; border-radius:3px; object-fit:cover; flex:none;
+    background:var(--panel-2); border:1px solid var(--border);
+  }
+  .thumb.placeholder{ display:flex; align-items:center; justify-content:center; color:var(--warm-gray); font-size:9px; font-family:'IBM Plex Mono',monospace; text-align:center;}
+  .card-body{flex:1; min-width:0;}
+  .card-top{display:flex; justify-content:space-between; align-items:flex-start; gap:8px;}
+  .addr{font-family:'Playfair Display',serif; font-weight:600; font-size:15.5px; color:var(--cream); word-break:break-word;}
+  .coords{font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--warm-gray); margin-top:3px;}
+  .ts{font-family:'IBM Plex Mono',monospace; font-size:10px; color:var(--warm-gray); margin-top:5px; opacity:0.8;}
+  .badge{
+    font-family:'Poppins',sans-serif; font-size:9.5px; padding:4px 9px; border-radius:2px;
+    text-transform:uppercase; letter-spacing:0.06em; flex:none; font-weight:600;
+  }
+  select.status-select{
+    margin-top:10px; width:100%; background:var(--panel-2); color:var(--cream);
+    border:1px solid var(--border); border-radius:3px; padding:8px; font-size:12.5px;
+    font-family:'Poppins',sans-serif; -webkit-appearance:none; appearance:none;
+  }
+  textarea.notes{
+    margin-top:8px; width:100%; background:var(--panel-2); color:var(--cream);
+    border:1px solid var(--border); border-radius:3px; padding:8px; font-size:12.5px;
+    font-family:'Poppins',sans-serif; resize:vertical; min-height:34px;
+  }
+  .card-actions{display:flex; justify-content:flex-end; gap:16px; margin-top:9px;}
+  .link-btn{
+    background:none; border:none; color:var(--warm-gray); font-family:'IBM Plex Mono',monospace;
+    font-size:10.5px; cursor:pointer; padding:0; text-decoration:underline; text-underline-offset:2px;
+  }
+  .link-btn.danger{color:var(--rust);}
+
+  .toolbar{padding:0 22px; display:flex; gap:10px; margin-top:8px;}
+  .btn-outline{
+    flex:1; padding:12px; border-radius:3px; border:1px solid var(--border);
+    background:var(--panel); color:var(--cream); font-family:'Poppins',sans-serif;
+    font-size:11.5px; letter-spacing:0.05em; text-align:center; cursor:pointer;
+  }
+
+  .trust-row{
+    display:flex; gap:0; margin:34px 22px 6px; padding-top:20px; border-top:1px solid var(--border);
+    justify-content:space-between;
+  }
+  .trust-item{ text-align:center; flex:1; padding:0 4px;}
+  .trust-item .ring{
+    width:34px; height:34px; border-radius:50%; border:1px solid var(--gold);
+    margin:0 auto 8px; display:flex; align-items:center; justify-content:center; color:var(--gold); font-size:13px;
+  }
+  .trust-item .lbl{ font-size:9px; letter-spacing:0.06em; text-transform:uppercase; color:var(--warm-gray); line-height:1.5;}
+
+  #modal-overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,0.65); display:none;
+    align-items:flex-end; z-index:50;
+  }
+  #modal-overlay.open{display:flex;}
+  #modal{
+    background:var(--panel); width:100%; border-radius:14px 14px 0 0; border-top:1px solid var(--gold-deep);
+    padding:22px 22px 28px; max-height:85vh; overflow-y:auto;
+  }
+  #modal h2{font-family:'Playfair Display',serif; font-weight:700; font-size:20px; margin:0 0 16px; color:var(--cream);}
+  #modal label{display:block; font-family:'Poppins',sans-serif; font-size:10.5px; color:var(--gold); margin:16px 0 7px; text-transform:uppercase; letter-spacing:0.09em; font-weight:600;}
+  #modal input[type=text]{
+    width:100%; background:var(--panel-2); color:var(--cream); border:1px solid var(--border);
+    border-radius:3px; padding:11px; font-size:14px; font-family:'Poppins',sans-serif;
+  }
+  .photo-input-row{display:flex; gap:10px; margin-top:6px;}
+  .photo-preview{
+    width:80px; height:80px; border-radius:4px; object-fit:cover; border:1px solid var(--border); background:var(--panel-2);
+  }
+  .cam-btn{
+    flex:1; border:1px dashed var(--border); border-radius:4px; background:var(--panel-2);
+    color:var(--warm-gray); font-family:'Poppins',sans-serif; font-size:12px; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; text-align:center; padding:10px;
+  }
+  #modal .modal-actions{display:flex; gap:10px; margin-top:22px;}
+  .btn-primary{
+    flex:1; padding:14px; border-radius:3px; border:none;
+    background: linear-gradient(180deg, #DCB876 0%, var(--gold-deep) 100%);
+    color:#1C1710; font-family:'Playfair Display',serif; font-weight:700;
+    font-size:14.5px; letter-spacing:0.01em; cursor:pointer;
+  }
+  .btn-cancel{
+    padding:14px 18px; border-radius:3px; border:1px solid var(--border); background:none;
+    color:var(--warm-gray); font-family:'Poppins',sans-serif; font-size:12.5px; cursor:pointer;
+  }
+
+  footer.tag{
+    margin-top:32px; padding:14px 22px; background:var(--gold); color:#1C1710;
+    text-align:center; font-family:'Poppins',sans-serif; font-size:10.5px;
+    letter-spacing:0.14em; text-transform:uppercase; font-weight:600;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand-row">
+    <div class="trowel-mark">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 21L14 10M14 10L17 7C18 6 19 5 20 4C20.5 3.5 20.5 2.5 20 2C19.5 1.5 18.5 1.5 18 2C17 3 16 4 15 5L12 8M14 10L12 8" stroke="#C9A15C" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <div>
+      <div class="brand-name">Maine Stone Construction</div>
+      <div class="brand-sub">Custom Masonry · Built to Last</div>
+    </div>
+  </div>
+  <h1>Site<br><em>Log</em></h1>
+  <hr class="gold-rule">
+  <p class="sub">Drop a pin on every house — never lose a lead again.</p>
+</header>
+
+<div class="drop-zone">
+  <button class="pin-btn" id="dropPinBtn">
+    DROP PIN
+    <small>+ Photo</small>
+  </button>
+  <p class="pin-hint">Tap to log this location, snap the chimney or wall, and set a status.</p>
+  <p class="status-line" id="statusLine"></p>
+</div>
+
+<div class="section-label">
+  <span class="txt">Filter</span>
+  <span class="line"></span>
+</div>
+<div class="filters" id="filters"></div>
+
+<div class="section-label">
+  <span class="txt">Leads</span>
+  <span class="line"></span>
+</div>
+
+<div class="toolbar">
+  <button class="btn-outline" id="exportBtn">Export CSV</button>
+  <button class="btn-outline" id="clearBtn">Clear All</button>
+</div>
+
+<div id="list"></div>
+
+<div class="trust-row">
+  <div class="trust-item">
+    <div class="ring">★</div>
+    <div class="lbl">On-Site<br>Logging</div>
+  </div>
+  <div class="trust-item">
+    <div class="ring">✓</div>
+    <div class="lbl">No Lead<br>Lost</div>
+  </div>
+  <div class="trust-item">
+    <div class="ring">⌂</div>
+    <div class="lbl">Built for<br>the Truck</div>
+  </div>
+</div>
+
+<footer class="tag">Serving Bangor, Midcoast &amp; Coastal Maine</footer>
+
+<!-- New/Edit Lead Modal -->
+<div id="modal-overlay">
+  <div id="modal">
+    <h2>New Lead</h2>
+
+    <label>Location</label>
+    <p class="coords mono" id="modalCoords">—</p>
+
+    <label>Photo</label>
+    <div class="photo-input-row">
+      <img class="photo-preview" id="photoPreview" style="display:none;">
+      <button class="cam-btn" id="camBtn">📷 Take / choose photo</button>
+    </div>
+    <input type="file" accept="image/*" capture="environment" id="fileInput" style="display:none;">
+
+    <label>Address / description</label>
+    <input type="text" id="addrInput" placeholder="e.g. 14 Birch Hill Rd, or 'blue cape, cracked crown'">
+
+    <label>Status</label>
+    <select class="status-select" id="statusInput"></select>
+
+    <label>Notes</label>
+    <textarea class="notes" id="notesInput" placeholder="Anything worth remembering..."></textarea>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" id="cancelBtn">Cancel</button>
+      <button class="btn-primary" id="saveBtn">Save Lead</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STATUSES = [
+  {key:'new', label:'New', color:'#9C9484'},
+  {key:'flyer', label:'Flyer Dropped', color:'#C9A15C'},
+  {key:'called', label:'Called Back', color:'#C9A15C'},
+  {key:'quoted', label:'Quote Sent', color:'#DCB876'},
+  {key:'won', label:'Won', color:'#7A9B7E'},
+  {key:'lost', label:'Not Interested', color:'#B06A4F'},
+];
+const statusMap = Object.fromEntries(STATUSES.map(s=>[s.key,s]));
+const STORE_KEY = 'mainstone_leads_v1';
+const STALE_DAYS = 7;
+const STALE_MS = STALE_DAYS * 24 * 60 * 60 * 1000;
+
+function isStale(lead){
+  return lead.status === 'flyer' && (Date.now() - lead.createdAt) > STALE_MS;
+}
+
+let leads = [];
+let activeFilter = 'all';
+let pendingCoords = null;
+let pendingPhoto = null;
+
+function loadLeads(){
+  try{
+    const raw = localStorage.getItem(STORE_KEY);
+    leads = raw ? JSON.parse(raw) : [];
+  }catch(e){ leads = []; }
+}
+function saveLeads(){
+  localStorage.setItem(STORE_KEY, JSON.stringify(leads));
+}
+
+function renderFilters(){
+  const el = document.getElementById('filters');
+  const counts = {all: leads.length};
+  STATUSES.forEach(s=> counts[s.key] = leads.filter(l=>l.status===s.key).length);
+  const staleCount = leads.filter(isStale).length;
+  const chips = [{key:'all', label:'All'}, {key:'stale', label:'Needs Follow-up', stale:true}, ...STATUSES];
+  el.innerHTML = chips.map(c=>{
+    const active = activeFilter===c.key ? 'active' : '';
+    const count = c.key==='stale' ? staleCount : (counts[c.key] ?? 0);
+    const staleClass = c.stale ? 'stale' : '';
+    return `<button class="chip ${staleClass} ${active}" data-filter="${c.key}">${c.label} (${count})</button>`;
+  }).join('');
+  el.querySelectorAll('.chip').forEach(btn=>{
+    btn.onclick = ()=>{ activeFilter = btn.dataset.filter; renderFilters(); renderList(); };
+  });
+}
+
+function fmtTime(ts){
+  const d = new Date(ts);
+  return d.toLocaleDateString(undefined,{month:'short',day:'numeric'}) + ' · ' +
+         d.toLocaleTimeString(undefined,{hour:'numeric',minute:'2-digit'});
+}
+
+function renderList(){
+  const el = document.getElementById('list');
+  let filtered;
+  if(activeFilter==='all') filtered = leads;
+  else if(activeFilter==='stale') filtered = leads.filter(isStale);
+  else filtered = leads.filter(l=>l.status===activeFilter);
+  const sorted = [...filtered].sort((a,b)=> b.createdAt - a.createdAt);
+
+  if(sorted.length===0){
+    const msg = activeFilter==='stale'
+      ? 'Nothing overdue — every flyer lead has been followed up on or moved forward.'
+      : 'No leads logged yet.<br>Tap “Drop Pin” above at the next house.';
+    el.innerHTML = `<div class="empty">${msg}</div>`;
+    return;
+  }
+
+  el.innerHTML = sorted.map(l=>{
+    const st = statusMap[l.status] || statusMap.new;
+    const thumb = l.photo
+      ? `<img class="thumb" src="${l.photo}">`
+      : `<div class="thumb placeholder">NO<br>PHOTO</div>`;
+    const optionsHtml = STATUSES.map(s=>`<option value="${s.key}" ${s.key===l.status?'selected':''}>${s.label}</option>`).join('');
+    return `
+    <div class="card" data-id="${l.id}">
+      ${thumb}
+      <div class="card-body">
+        <div class="card-top">
+          <div>
+            <div class="addr">${l.address ? escapeHtml(l.address) : 'Unlabeled location'}</div>
+            <div class="coords mono">${l.lat.toFixed(5)}, ${l.lng.toFixed(5)}</div>
+            <div class="ts">${fmtTime(l.createdAt)}</div>
+          </div>
+          <span class="badge" style="background:${st.color}22; color:${st.color}; border:1px solid ${st.color}55;">${st.label}</span>
+        </div>
+        ${isStale(l) ? `<span class="badge stale-badge">⚠ Flyer dropped ${Math.floor((Date.now()-l.createdAt)/86400000)}d ago — follow up</span>` : ''}
+        <select class="status-select" data-id="${l.id}">${optionsHtml}</select>
+        <textarea class="notes" data-id="${l.id}" placeholder="Notes...">${l.notes ? escapeHtml(l.notes) : ''}</textarea>
+        <div class="card-actions">
+          <button class="link-btn" data-action="map" data-id="${l.id}">Map</button>
+          <button class="link-btn danger" data-action="delete" data-id="${l.id}">Delete</button>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  el.querySelectorAll('select.status-select').forEach(sel=>{
+    sel.onchange = ()=>{
+      const lead = leads.find(l=>l.id===sel.dataset.id);
+      if(lead){ lead.status = sel.value; saveLeads(); renderFilters(); renderList(); }
+    };
+  });
+  el.querySelectorAll('textarea.notes').forEach(ta=>{
+    ta.onblur = ()=>{
+      const lead = leads.find(l=>l.id===ta.dataset.id);
+      if(lead){ lead.notes = ta.value; saveLeads(); }
+    };
+  });
+  el.querySelectorAll('[data-action="delete"]').forEach(btn=>{
+    btn.onclick = ()=>{
+      if(confirm('Delete this lead?')){
+        leads = leads.filter(l=>l.id!==btn.dataset.id);
+        saveLeads(); renderFilters(); renderList();
+      }
+    };
+  });
+  el.querySelectorAll('[data-action="map"]').forEach(btn=>{
+    btn.onclick = ()=>{
+      const lead = leads.find(l=>l.id===btn.dataset.id);
+      if(lead) window.open(`https://maps.google.com/?q=${lead.lat},${lead.lng}`, '_blank');
+    };
+  });
+}
+
+function escapeHtml(str){
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+// ---- Modal / capture flow ----
+function openModal(){
+  pendingPhoto = null;
+  document.getElementById('addrInput').value = '';
+  document.getElementById('notesInput').value = '';
+  document.getElementById('photoPreview').style.display = 'none';
+  document.getElementById('statusInput').innerHTML = STATUSES.map(s=>`<option value="${s.key}">${s.label}</option>`).join('');
+  document.getElementById('statusInput').value = 'flyer';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+async function reverseGeocode(lat, lng){
+  // Best-effort street address lookup. Fails silently on no signal / rate limit —
+  // the pin still saves fine with just coordinates either way.
+  try{
+    const controller = new AbortController();
+    const timeout = setTimeout(()=>controller.abort(), 6000);
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`,
+      { signal: controller.signal, headers: { 'Accept': 'application/json' } }
+    );
+    clearTimeout(timeout);
+    if(!res.ok) return null;
+    const data = await res.json();
+    const a = data.address || {};
+    const houseNum = a.house_number || '';
+    const street = a.road || a.pedestrian || a.residential || '';
+    const rest = [a.city || a.town || a.village, a.state].filter(Boolean).join(', ');
+    const line = [houseNum, street].filter(Boolean).join(' ');
+    if(!line && !rest) return null;
+    return [line, rest].filter(Boolean).join(', ');
+  }catch(e){
+    return null; // offline, timed out, or rate-limited — just skip it
+  }
+}
+
+document.getElementById('dropPinBtn').onclick = ()=>{
+  const statusLine = document.getElementById('statusLine');
+  if(!navigator.geolocation){
+    statusLine.textContent = 'GPS not available on this device.';
+    return;
+  }
+  statusLine.textContent = 'Locating...';
+  navigator.geolocation.getCurrentPosition(
+    async (pos)=>{
+      pendingCoords = {lat: pos.coords.latitude, lng: pos.coords.longitude};
+      statusLine.textContent = '';
+      openModal();
+      document.getElementById('modalCoords').textContent = pendingCoords.lat.toFixed(5) + ', ' + pendingCoords.lng.toFixed(5);
+
+      const addrInput = document.getElementById('addrInput');
+      addrInput.placeholder = 'Looking up address...';
+      const address = await reverseGeocode(pendingCoords.lat, pendingCoords.lng);
+      addrInput.placeholder = "e.g. 14 Birch Hill Rd, or 'blue cape, cracked crown'";
+      // Only auto-fill if the field is still empty and modal wasn't already saved/closed
+      if(address && !addrInput.value && document.getElementById('modal-overlay').classList.contains('open')){
+        addrInput.value = address;
+      }
+    },
+    (err)=>{
+      statusLine.textContent = 'Could not get location — check GPS/location permission.';
+    },
+    {enableHighAccuracy:true, timeout:10000}
+  );
+};
+
+document.getElementById('camBtn').onclick = ()=> document.getElementById('fileInput').click();
+document.getElementById('fileInput').onchange = (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev)=>{
+    const img = new Image();
+    img.onload = ()=>{
+      const maxW = 600;
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = img.width * scale;
+      canvas.height = img.height * scale;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      pendingPhoto = canvas.toDataURL('image/jpeg', 0.5);
+      const preview = document.getElementById('photoPreview');
+      preview.src = pendingPhoto;
+      preview.style.display = 'block';
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+document.getElementById('cancelBtn').onclick = closeModal;
+document.getElementById('modal-overlay').onclick = (e)=>{
+  if(e.target.id === 'modal-overlay') closeModal();
+};
+
+document.getElementById('saveBtn').onclick = ()=>{
+  if(!pendingCoords){ closeModal(); return; }
+  const lead = {
+    id: 'l_' + Date.now() + '_' + Math.random().toString(36).slice(2,7),
+    lat: pendingCoords.lat,
+    lng: pendingCoords.lng,
+    address: document.getElementById('addrInput').value.trim(),
+    photo: pendingPhoto,
+    status: document.getElementById('statusInput').value,
+    notes: document.getElementById('notesInput').value.trim(),
+    createdAt: Date.now()
+  };
+  leads.push(lead);
+  saveLeads();
+  closeModal();
+  renderFilters();
+  renderList();
+};
+
+document.getElementById('exportBtn').onclick = ()=>{
+  if(leads.length===0){ alert('No leads to export yet.'); return; }
+  const header = ['Address','Latitude','Longitude','Status','Notes','Logged'];
+  const rows = leads.map(l=>[
+    l.address || '',
+    l.lat, l.lng,
+    (statusMap[l.status]||{}).label || l.status,
+    (l.notes||'').replace(/\n/g,' '),
+    new Date(l.createdAt).toLocaleString()
+  ]);
+  const csv = [header, ...rows].map(r =>
+    r.map(cell => `"${String(cell).replace(/"/g,'""')}"`).join(',')
+  ).join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `mainstone-leads-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+document.getElementById('clearBtn').onclick = ()=>{
+  if(leads.length===0) return;
+  if(confirm('Delete ALL logged leads? This cannot be undone.')){
+    leads = [];
+    saveLeads();
+    renderFilters();
+    renderList();
+  }
+};
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+
+loadLeads();
+renderFilters();
+renderList();
+</script>
+</body>
+</html>
